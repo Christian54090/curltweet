@@ -1,4 +1,5 @@
 require 'nokogiri'
+require 'm3u8'
 require 'open-uri'
 require 'json'
 
@@ -21,9 +22,12 @@ def download_url
   video_url = JSON.load(api)
   video_url = video_url['track']['playbackUrl']
 
-  puts video_url
-  # Grab video file
-#  video_res =
+  # Grab video
+  video_res = open(video_url, 'Authorization' => auth_token)
+  host = URI.parse(video_url).scheme + '://' + URI.parse(video_url).hostname
+
+
+  exit(0)
 end
 
 download_url
