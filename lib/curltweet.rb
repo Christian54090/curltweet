@@ -20,27 +20,24 @@ def download_url
   # Talk to API, ask it nicely for the video url
   api_link = "https://api.twitter.com/1.1/videos/tweet/config/#{@token}.json"
   api = open(api_link, 'Authorization' => auth_token)
-  video_url = JSON.load(api)['track']['playbackUrl']
+  pl_url = JSON.load(api)['track']['playbackUrl']
 
-  # Grab video
-  video_res = open(video_url, 'Authorization' => auth_token)
-  host = URI.parse(video_url).scheme + '://' + URI.parse(video_url).hostname
+  # Grab playlist (playlist contains all video resolutions)
+  pl_response = open(pl_url, 'Authorization' => auth_token)
+  host = URI.parse(pl_url).scheme + '://' + URI.parse(pl_url).hostname
 
-  # Parse the video
-  video_parse = M3u8::Playlist.read(video_res)
+  # Parse the playlist
+  pl_parse = M3u8::Playlist.read(pl_response)
 
-  video_parse.items.each do |video|
-    play_url = host + video.uri
-    play_res = open(play_url)
-
-    play_parse = M3u8::Playlist.read(play_res)
+  pl_parse.items.each do |video|
+    video_response = open(host + video.uri)
 
     content = ''
+    video_parse = M3u8::Playlist.read(video_response)
 
-    play_parse.items.each do |segment|
-      uri = segment.to_s.split(',')[1].strip
-      file = open(host + uri)
-      suffix = uri.split('/')[-1]
+    video_parse.items.each do |segment|
+      segment_uri = segment.to_s.split(',')[1].strip
+      file = open(host + segment_uri)
 
       File.open(file).each_line{ |line| content += line }
     end
