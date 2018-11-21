@@ -17,7 +17,7 @@ def download_url
   # Grab auth token
   auth_token = src.to_s.match(/Bearer ([a-zA-Z0-9%-])+/).to_s
 
-  # Talk to API
+  # Talk to API, ask it nicely for the video url
   api_link = "https://api.twitter.com/1.1/videos/tweet/config/#{@token}.json"
   api = open(api_link, 'Authorization' => auth_token)
   video_url = JSON.load(api)['track']['playbackUrl']
@@ -35,17 +35,19 @@ def download_url
 
     play_parse = M3u8::Playlist.read(play_res)
 
-    list = ''
+    content = ''
 
     play_parse.items.each do |segment|
       uri = segment.to_s.split(',')[1].strip
       file = open(host + uri)
       suffix = uri.split('/')[-1]
-      File.open(file).each_line{ |line| list += line }
+
+      File.open(file).each_line{ |line| content += line }
     end
 
+    # Compile video into one file and download it
     File.open("#{@author}_#{@token}_#{video.resolution}.ts", 'w'){ |f|
-      f.write(list)
+      f.write(content)
     }
 
   end
