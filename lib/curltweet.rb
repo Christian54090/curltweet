@@ -14,7 +14,7 @@ def download_url
   find_src = doc.at_css('script').to_s.split('"')[1]
   src = Nokogiri::HTML(open(find_src))
 
-  # Grab auth token
+  # Grab auth token. regex taken from github...twitter-video-downloader
   auth_token = src.to_s.match(/Bearer ([a-zA-Z0-9%-])+/).to_s
 
   # Talk to API, ask it nicely for the video url
@@ -31,9 +31,8 @@ def download_url
 
   pl_parse.items.each do |video|
     video_response = open(host + video.uri)
-
-    content = ''
     video_parse = M3u8::Playlist.read(video_response)
+    content = ''
 
     video_parse.items.each do |segment|
       segment_uri = segment.to_s.split(',')[1].strip
